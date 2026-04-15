@@ -1,4 +1,5 @@
 import { Album } from "../models/album.model.js";
+import { Song } from "../models/song.model.js";
 
 export const getAllAlbums = async (req, res, next) => {
 	try {
@@ -13,10 +14,16 @@ export const getAlbumById = async (req, res, next) => {
 	try {
 		const { albumId } = req.params;
 
-		const album = await Album.findById(albumId).populate("songs");
+		let album = await Album.findById(albumId).populate("songs");
 
 		if (!album) {
 			return res.status(404).json({ message: "Album not found" });
+		}
+
+		if (!album.songs || album.songs.length === 0) {
+			const songs = await Song.find({ albumId }).sort({ createdAt: 1 });
+			album = album.toObject();
+			album.songs = songs;
 		}
 
 		res.status(200).json(album);

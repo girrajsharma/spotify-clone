@@ -1,14 +1,9 @@
-import { axiosInstance } from "@/lib/axios";
+import { axiosInstance, setupAxiosInterceptors } from "@/lib/axios";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useChatStore } from "@/stores/useChatStore";
 import { useAuth } from "@clerk/clerk-react";
 import { Loader } from "lucide-react";
 import { useEffect, useState } from "react";
-
-const updateApiToken = (token: string | null) => {
-	if (token) axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-	else delete axiosInstance.defaults.headers.common["Authorization"];
-};
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const { getToken, userId } = useAuth();
@@ -19,16 +14,19 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	useEffect(() => {
 		const initAuth = async () => {
 			try {
+				// Setup axios to always get fresh token before requests
+				setupAxiosInterceptors(getToken);
+
 				const token = await getToken();
-				updateApiToken(token);
 				if (token) {
+					axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 					await checkAdminStatus();
 					// init socket
 					if (userId) initSocket(userId);
 				}
 			} catch (error: any) {
-				updateApiToken(null);
-				console.log("Error in auth provider", error);
+				delete axiosInstance.defaults.headers.common["Authorization"];
+				console.error("Error in auth provider:", error);
 			} finally {
 				setLoading(false);
 			}

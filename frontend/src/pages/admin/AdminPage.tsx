@@ -9,7 +9,7 @@ import { useEffect } from "react";
 import { useMusicStore } from "@/stores/useMusicStore";
 
 const AdminPage = () => {
-	const { isAdmin, isLoading } = useAuthStore();
+	const { isAdmin, isLoading, error } = useAuthStore();
 
 	const { fetchAlbums, fetchSongs, fetchStats } = useMusicStore();
 
@@ -19,7 +19,20 @@ const AdminPage = () => {
 		fetchStats();
 	}, [fetchAlbums, fetchSongs, fetchStats]);
 
-	if (!isAdmin && !isLoading) return <div>Unauthorized</div>;
+	if (!isAdmin && !isLoading) {
+		return (
+			<div className='min-h-screen bg-gradient-to-b from-zinc-900 via-zinc-900 to-black text-zinc-100 p-8 flex items-center justify-center'>
+				<div className='text-center'>
+					<h1 className='text-2xl font-bold mb-2'>Unauthorized</h1>
+					<p className='text-zinc-400 mb-4'>
+						{error || 
+						'You need to be logged in and have admin permissions to access this page. ' +
+						'Make sure your email is set as ADMIN_EMAIL in the backend environment variables.'}
+					</p>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div

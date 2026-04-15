@@ -18,26 +18,37 @@ const AlbumPage = () => {
 	const { currentSong, isPlaying, playAlbum, togglePlay } = usePlayerStore();
 
 	useEffect(() => {
-		if (albumId) fetchAlbumById(albumId);
+		if (albumId) {
+			console.log("AlbumPage fetching album", albumId);
+			fetchAlbumById(albumId);
+		}
 	}, [fetchAlbumById, albumId]);
+
+	useEffect(() => {
+		if (currentAlbum) {
+			console.log("AlbumPage currentAlbum", currentAlbum);
+		}
+	}, [currentAlbum]);
+
+	const albumSongs = currentAlbum?.songs ?? [];
 
 	if (isLoading) return null;
 
 	const handlePlayAlbum = () => {
 		if (!currentAlbum) return;
 
-		const isCurrentAlbumPlaying = currentAlbum?.songs.some((song) => song._id === currentSong?._id);
+		const isCurrentAlbumPlaying = albumSongs.some((song) => song._id === currentSong?._id);
 		if (isCurrentAlbumPlaying) togglePlay();
 		else {
 			// start playing the album from the beginning
-			playAlbum(currentAlbum?.songs, 0);
+			playAlbum(albumSongs, 0);
 		}
 	};
 
 	const handlePlaySong = (index: number) => {
 		if (!currentAlbum) return;
 
-		playAlbum(currentAlbum?.songs, index);
+		playAlbum(albumSongs, index);
 	};
 
 	return (
@@ -65,7 +76,7 @@ const AlbumPage = () => {
 								<h1 className='text-7xl font-bold my-4'>{currentAlbum?.title}</h1>
 								<div className='flex items-center gap-2 text-sm text-zinc-100'>
 									<span className='font-medium text-white'>{currentAlbum?.artist}</span>
-									<span>• {currentAlbum?.songs.length} songs</span>
+									<span>• {albumSongs.length} songs</span>
 									<span>• {currentAlbum?.releaseYear}</span>
 								</div>
 							</div>
@@ -79,7 +90,7 @@ const AlbumPage = () => {
 								className='w-14 h-14 rounded-full bg-green-500 hover:bg-green-400 
                 hover:scale-105 transition-all'
 							>
-								{isPlaying && currentAlbum?.songs.some((song) => song._id === currentSong?._id) ? (
+								{isPlaying && albumSongs.some((song) => song._id === currentSong?._id) ? (
 									<Pause className='h-7 w-7 text-black' />
 								) : (
 									<Play className='h-7 w-7 text-black' />
@@ -106,7 +117,7 @@ const AlbumPage = () => {
 
 							<div className='px-6'>
 								<div className='space-y-2 py-4'>
-									{currentAlbum?.songs.map((song, index) => {
+									{albumSongs.map((song, index) => {
 										const isCurrentSong = currentSong?._id === song._id;
 										return (
 											<div

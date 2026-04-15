@@ -4,9 +4,6 @@ export const axiosInstance = axios.create({
 	baseURL: import.meta.env.MODE === "development" ? "http://localhost:5000/api" : "/api",
 });
 
-// Token refresh interceptor
-let tokenRefreshPromise: Promise<string | null> | null = null;
-
 export const setupAxiosInterceptors = (getToken: () => Promise<string | null>) => {
 	// Request interceptor to add token
 	axiosInstance.interceptors.request.use(
